@@ -1,7 +1,7 @@
 from typing import Callable, Optional
 from IEProtLib.py_utils.py_mol.PyProtein import PyProtein
 from IEProtLib.py_utils.py_mol.PyPeriodicTable import PyPeriodicTable
-from utils import *
+import utils
 from pygmmpp.data import Dataset, Data, Batch
 import os.path as osp
 import sys
@@ -17,6 +17,7 @@ def get_split(split: str, root: str):
 
 class HomologyTAPEDataset(Dataset):
     def __init__(self, root: str, split: str, includeHB: bool = False,
+                 to_undirected: bool = True,
                  use_amino_type: bool = False,
                  use_amino_pos: bool = False,
                  transform: Optional[Callable] = None, 
@@ -29,6 +30,8 @@ class HomologyTAPEDataset(Dataset):
         split (str): Dataset split (training/validation/test_family/test_fold/test_superfamily) \\
         includeHB (bool): Whether to include hydrogen bond in adjacency matrix,
         default to False \\ 
+        to_undirected (bool): Whether to convert graph into undirected by adding
+        inverse edges, default to True \\
         use_amino_type (bool): Whether to use amino acid type as additional node
         feature, default to False \\
         use_amino_pos (bool): Whether to use amino acid position as additional
@@ -36,6 +39,7 @@ class HomologyTAPEDataset(Dataset):
         """
         self.split = split
         self.includeHB = includeHB
+        self.to_undirected = to_undirected
         self.use_amino_type = use_amino_type
         self.use_amino_pos = use_amino_pos
         super().__init__(root, transform, pre_transform, pre_filter)
@@ -62,19 +66,21 @@ class HomologyTAPEDataset(Dataset):
         print("Converting hdf5 files to PyG objects...", file=sys.stderr)
         data_list: List[Data] = []
         for file in tqdm(split):
-            file_dict = read_file(protein, osp.join(self.root, 'raw', 'HomologyTAPE', self.split, f'{file}.hdf5'))
-            num_nodes = get_num_nodes(file_dict)
-            edge_index = get_edge_index(file_dict, self.includeHB)
+            file_dict = utils.read_file(protein, osp.join(self.root, 'raw', 'HomologyTAPE', self.split, f'{file}.hdf5'))
+            num_nodes = utils.get_num_nodes(file_dict)
+            edge_index = torch.from_numpy(utils.get_edge_index(file_dict, self.includeHB)).t().to(torch.long)
+            if self.to_undirected:
+                edge_index = utils.to_undirected(edge_index, num_nodes)
             data = Data(
                 x=torch.ones((num_nodes, 1)),
-                edge_index=torch.from_numpy(edge_index).t()
+                edge_index=edge_index
             )
             if self.use_amino_pos:
-                amino_pos = get_amino_pos(file_dict)
+                amino_pos = utils.get_amino_pos(file_dict)
                 data.__set_tensor_attr__('AminoPos', torch.from_numpy(amino_pos),
                                          'node_feature')
             if self.use_amino_type:
-                amino_type = get_amino_type(file_dict)
+                amino_type = utils.get_amino_type(file_dict)
                 data.__set_tensor_attr__('AminoType', torch.from_numpy(amino_type),
                                          'node_feature')
             

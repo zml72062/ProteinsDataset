@@ -12,6 +12,8 @@ We collect three protein datasets: `ProteinsDBDataset`, `HomologyTAPEDataset` an
 
 ## Usage
 
+Processing the datasets require the `IEProtLib.py_utils.py_mol` package, which can be obtained by cloning https://github.com/phermosilla/IEConv_proteins and copy the `IEProtLib/py_utils/py_mol` directory in that repo to the root directory of this repo.
+
 * `ProteinsDBDataset`: 
 
 https://drive.google.com/uc?export=download&id=1KTs5cUYhG60C6WagFp4Pg8xeMgvbLfhB
@@ -31,3 +33,4 @@ https://drive.google.com/uc?export=download&id=1udP6_90WYkwkvL1LwqIAzf9ibegBJ8rI
 
 Extract content in: `[root]/raw/ProtFunct/`
 
+**NOTICE** that all three datasets contain **directed** graphs, although only a small portion of the edges are single-directed. We provide a simple helper method `utils.to_undirected()` to convert a graph to undirected by adding inverse edges.

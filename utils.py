@@ -1,4 +1,5 @@
 import numpy as np
+from torch import LongTensor, cat, stack
 from typing import Dict
 from IEProtLib.py_utils.py_mol.PyProtein import PyProtein
 
@@ -24,3 +25,9 @@ def get_amino_type(file_dict: Dict) -> np.ndarray:
 
 def get_amino_pos(file_dict: Dict) -> np.ndarray:
     return file_dict['AminoPos'].reshape((-1, 3))
+
+def to_undirected(edge_index: LongTensor, num_nodes: int):
+    edge_index_1d = edge_index[0] * num_nodes + edge_index[1]
+    edge_index_1d_rev = edge_index[1] * num_nodes + edge_index[0]
+    new_edge_index = cat([edge_index_1d, edge_index_1d_rev], dim=0).unique()
+    return stack([new_edge_index // num_nodes, new_edge_index % num_nodes], dim=0)
