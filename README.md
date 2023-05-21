@@ -10,6 +10,12 @@ We collect three protein datasets: `ProteinsDBDataset`, `HomologyTAPEDataset` an
 |`HomologyTAPEDataset` | 16,292 | training:validation:test_fold:test_family:test_superfamily = 12312:736:718:1272:1254|
 |`ProtFunctDataset` | 37,428 | training:validation:testing = 29215:2562:5651|
 
+|Dataset| Average # of nodes | Average # of edges |
+|:--:|:---:|:---:|
+|`ProteinsDBDataset` | 475.9 | 1,483.7 |
+|`HomologyTAPEDataset` |  167.3   | 513.5  |
+|`ProtFunctDataset` | 298.5 | 929.1 |
+
 ## Usage
 
 Processing the datasets require the `IEProtLib.py_utils.py_mol` package, which can be obtained by cloning https://github.com/phermosilla/IEConv_proteins and copy the `IEProtLib/py_utils/py_mol` directory in that repo to the root directory of this repo.
